@@ -172,19 +172,30 @@ function parseRange(str) {
   return { min: Math.min(n[0], n[1]), max: Math.max(n[0], n[1]), avg: (n[0] + n[1]) / 2 };
 }
 
+// 新版参数解析函数（已适配你的金数据表单）
 function parseURLParams() {
   const params = new URLSearchParams(window.location.search);
-  if (!params.toString()) return null;
+  const result = {};
+
+  console.log('【调试】原始URL参数长度:', window.location.search.length);
+  console.log('【调试】原始URL参数:', window.location.search);
+
+  for (let [key, value] of params.entries()) {
+    const decoded = decodeURIComponent(value || '').trim();
+    result[key] = decoded;
+    console.log('参数映射:', key, '=>', decoded);
+  }
+
   return {
-    company: params.get('company') || params.get('field_1') || '',
-    returnRate: params.get('returnRate') || params.get('field_8') || '',
-    orders: params.get('orders') || params.get('field_9') || '',
-    price: params.get('price') || params.get('field_10') || '',
-    handling: params.get('handling') || params.get('field_11') || '',
-    category: params.get('category') || params.get('field_7') || '',
-    platforms: (params.get('platforms') || params.get('field_5') || '').split(',').filter(Boolean),
-    markets: (params.get('markets') || params.get('field_4') || '').split(',').filter(Boolean),
-    newMarket: params.get('newMarket') || params.get('field_12') || ''
+    company: result['field_1'] || '未知企业',                    // Q1 企业名称
+    category: result['field_7'] || '',                           // Q7 产品类目
+    platforms: (result['field_5'] || '').split(/[,\s，；;]+/).filter(Boolean), // Q5 主要平台
+    markets: (result['field_4'] || '').split(/[,\s，；;]+/).filter(Boolean),  // Q4 销售国家/站点
+    returnRate: result['field_13'] || '',                        // Q8 平均退货率
+    orders: result['field_14'] || '',                            // Q9 月均订单量
+    price: result['field_15'] || '',                             // Q10 单件货值
+    handling: result['field_11'] || '',                          // Q11 退货处理方式
+    newMarket: result['field_12'] || ''                          // Q12 新市场计划
   };
 }
 
@@ -196,7 +207,6 @@ async function fetchAI(formData) {
     });
     if (!resp.ok) throw new Error('网络请求被阻挡');
     
-    // 直接获取 JSON 对象，彻底砍掉复杂解析导致崩溃的环节
     const result = await resp.json(); 
     if(!result || !result.score) throw new Error('数据结构丢失');
 
@@ -283,7 +293,6 @@ function runLocalEngine(f) {
 }
 
 function renderReport(d) {
-  // 隐藏加载页，展示报告
   const ls = document.getElementById('loading-screen');
   ls.classList.add('fade-out');
   setTimeout(() => { ls.style.display = 'none'; document.getElementById('report').style.display = 'block'; }, 500);
@@ -351,11 +360,25 @@ window.onload = function() {
     if (fill >= 100) {
       clearInterval(timer);
       const urlData = parseURLParams();
-      // 这里添加了强制延时，确保加载动画能被人类肉眼看完整
+      console.log('【调试】最终解析后的表单数据:', urlData);
+      
       setTimeout(() => {
-        if (urlData) fetchAI(urlData);
-        else runLocalEngine({ company:'某测试跨境公司', returnRate:'12%-20%', orders:'5000-2万单', price:'500-1000元', category:'服装/鞋类' });
-      }, 400);
+        if (urlData && (urlData.returnRate || urlData.orders || urlData.company)) {
+          fetchAI(urlData);
+        } else {
+          console.warn('未检测到有效参数，使用本地测试数据');
+          runLocalEngine({ 
+            company: '测试跨境店铺', 
+            returnRate: '12%-20%', 
+            orders: '5000-2万单', 
+            price: '500-1000元', 
+            category: '服装/鞋类',
+            platforms: ['Amazon'],
+            handling: '直接退款不退货，损失自担',
+            newMarket: '是'
+          });
+        }
+      }, 600);
     }
   }, 50);
 };
