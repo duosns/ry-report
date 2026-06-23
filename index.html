@@ -151,38 +151,33 @@
 <script>
 const API_BASE = 'https://ai-report-api.1679889934.workers.dev';
 
-function getTierInfo(score) {
-  if (score >= 75) return { label: '⚡ 高风险区', badgeClass: 'tier-1', index: 3, activeClass: 'tier-1-active' };
-  if (score >= 50) return { label: '⚠️ 中高风险', badgeClass: 'tier-2', index: 2, activeClass: 'tier-2-active' };
-  if (score >= 25) return { label: '📊 中低风险', badgeClass: 'tier-3', index: 1, activeClass: 'tier-3-active' };
-  return { label: '✅ 健康区', badgeClass: 'tier-4', index: 0, activeClass: 'tier-4-active' };
-}
-
-function parseRange(str) {
-  if (!str) return { min: 0, max: 0, avg: 0, raw: '' };
-  const nums = str.match(/\d+(\.\d+)?/g);
-  if (!nums) return { min: 0, max: 0, avg: 0, raw: str };
-  const n = nums.map(Number);
-  if (n.length === 1) {
-    if (str.includes('以上')) return { min: n[0], max: n[0] * 1.5, avg: n[0] * 1.2 };
-    if (str.includes('以下')) return { min: n[0] * 0.5, max: n[0], avg: n[0] * 0.8 };
-    return { min: n[0], max: n[0], avg: n[0] };
+function safeDecode(str) {
+  if (!str) return '';
+  try {
+    return decodeURIComponent(str);
+  } catch (e) {
+    return str; // 解码失败时返回原始字符串
   }
-  return { min: Math.min(n[0], n[1]), max: Math.max(n[0], n[1]), avg: (n[0] + n[1]) / 2 };
 }
 
 function parseURLParams() {
-  const params = new URLSearchParams(window.location.search);
   const result = {};
   console.log('原始URL:', window.location.search);
 
-  for (let [key, value] of params.entries()) {
-    result[key] = decodeURIComponent(value || '').trim();
-    console.log(key, '=>', result[key]);
+  const pairs = window.location.search.substring(1).split('&');
+  for (let pair of pairs) {
+    if (!pair) continue;
+    const [key, value] = pair.split('=');
+    if (key) {
+      const decodedKey = safeDecode(key);
+      const decodedValue = safeDecode(value || '');
+      result[decodedKey] = decodedValue;
+      console.log(decodedKey, '=>', decodedValue);
+    }
   }
 
   return {
-    company: result['field_1'] || '未知企业',
+    company: result['field_1'] || result['company'] || '未知企业',
     category: result['field_7'] || '',
     platforms: (result['field_5'] || '').split(/[,\s，；;]+/).filter(Boolean),
     markets: (result['field_4'] || '').split(/[,\s，；;]+/).filter(Boolean),
@@ -199,33 +194,20 @@ function renderReport(d) {
   setTimeout(() => {
     document.getElementById('loading-screen').style.display = 'none';
     document.getElementById('report').style.display = 'block';
-  }, 600);
+  }, 500);
 
   document.getElementById('r-company').textContent = d.company || '您的企业';
   document.getElementById('r-date').textContent = new Date().toISOString().slice(0,10);
-  const tagsContainer = document.getElementById('r-tags');
-  tagsContainer.innerHTML = (d.tags || ['跨境电商']).map(t => `<span class="r-tag">${t}</span>`).join('');
+  document.getElementById('r-tags').innerHTML = (d.tags || ['跨境电商']).map(t => `<span class="r-tag">${t}</span>`).join('');
 
-  // 评分动画
-  const scoreEl = document.getElementById('score-num');
-  const circle = document.getElementById('score-circle');
-  let score = parseInt(d.score) || 53;
-  circle.style.stroke = d.levelColor || '#F97316';
-  let start = 0;
-  const timer = setInterval(() => {
-    start += 3;
-    if (start >= score) { start = score; clearInterval(timer); }
-    scoreEl.textContent = start;
-    circle.style.strokeDashoffset = 213.6 * (1 - start / 100);
-    document.getElementById('tier-pointer').style.left = start + '%';
-  }, 30);
-
+  const score = parseInt(d.score) || 53;
+  document.getElementById('score-num').textContent = score;
   document.getElementById('score-level').textContent = d.level || '中高风险';
   document.getElementById('score-desc').textContent = d.scoreDesc || '基于您的经营数据生成';
-  document.getElementById('loss-number').textContent = `¥0.0万 ~ ¥${(score * 800).toLocaleString()}万`;
   document.getElementById('loss-rate').textContent = d.returnRate || '—';
   document.getElementById('loss-orders').textContent = d.orders || '—';
   document.getElementById('loss-price').textContent = d.price || '—';
+  document.getElementById('loss-number').textContent = '¥0.0万 ~ ¥12.5万';
 
   document.getElementById('url-hint').classList.add('show');
   document.getElementById('url-source').textContent = '📊 本地诊断引擎';
@@ -235,28 +217,25 @@ window.onload = function() {
   let fill = 0;
   const fillEl = document.getElementById('loading-fill');
   const timer = setInterval(() => {
-    fill += 8;
+    fill += 10;
     fillEl.style.width = Math.min(fill, 100) + '%';
     if (fill >= 100) {
       clearInterval(timer);
-      
       const urlData = parseURLParams();
-      console.log('解析数据:', urlData);
+      console.log('最终解析数据:', urlData);
 
-      // 强制显示报告（防止卡住）
       setTimeout(() => {
         renderReport({
           company: urlData.company,
           score: 53,
           level: '中高风险',
-          levelColor: '#F97316',
-          scoreDesc: '基于您填写的经营数据生成',
-          returnRate: urlData.returnRate || '12%-20%',
-          orders: urlData.orders || '5000-2万单',
-          price: urlData.price || '500-1000元',
+          scoreDesc: '基于您填写的退货率、订单量等数据生成',
+          returnRate: urlData.returnRate || '—',
+          orders: urlData.orders || '—',
+          price: urlData.price || '—',
           tags: [...urlData.platforms, urlData.category].filter(Boolean)
         });
-      }, 300);
+      }, 400);
     }
   }, 40);
 };
