@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>榕驿通 · 专属退货风险诊断报告</title>
+<style>
+  :root {
+    --teal: #6CBF96;
+    --teal-light: #E1F5EE;
+    --teal-mid: #1D9E75;
+    --teal-dark: #0F6E56;
+    --navy: #1a2540;
+    --gold: #C9A84C;
+    --gold-light: #FFF8EA;
+    --red: #EF4444;
+    --orange: #F97316;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: #F3F4F8;
+    color: #1F2937;
+    font-size: 14px;
+    min-height: 100vh;
+  }
+  /* Loading Screen */
+  #loading-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--navy);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.6s ease;
+  }
+  #loading-screen.fade-out { opacity: 0; pointer-events: none; }
+  .loading-logo {
+    width: 64px; height: 64px;
+    background: var(--teal);
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px;
+    font-size: 28px;
+  }
+  .loading-title {
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .loading-sub {
+    color: rgba(255,255,255,0.55);
+    font-size: 13px;
+    margin-bottom: 32px;
+  }
+  .loading-bar {
+    width: 200px;
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .loading-bar-fill {
+    height: 100%;
+    background: var(--teal);
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+  .loading-steps {
+    color: rgba(255,255,255,0.4);
+    font-size: 12px;
+    min-height: 20px;
+    text-align: center;
+  }
+
+  /* Main Report */
+  #report {
+    display: none;
+    max-width: 420px;
+    margin: 0 auto;
+    padding-bottom: 40px;
+  }
+
+  /* Header */
+  .r-header {
+    background: var(--navy);
+    padding: 24px 20px 20px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .r-header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: rgba(108,191,150,0.1);
+  }
+  .r-brand {
+    font-size: 11px;
+    color: var(--teal);
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .r-brand::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--teal);
+    border-radius: 50%;
+    display: block;
+  }
+  .r-company {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .r-meta {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .r-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .r-tag {
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.7);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+  }
+
+  /* Score */
+  .score-section {
+    background: #fff;
+    margin: 12px;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  }
+  .score-title {
+    font-size: 12px;
+    color: #9CA3AF;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .score-main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .score-ring {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .score-ring svg {
+    position: absolute;
+    inset: 0;
+    transform: rotate(-90deg);
+  }
+  .score-num {
+    font-size: 26px;
+    font-weight: 700;
+    position: relative;
+    z-index: 1;
+  }
+  .score-unit {
+    font-size: 10px;
+    color: #9CA3AF;
+    position: relative;
+    z-index: 1;
+  }
+  .score-info { flex: 1; }
+  .score-level {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .score-desc {
+    font-size: 12px;
+    color: #6B7280;
+    line-height: 1.5;
+  }
+  .score-bar-wrap {
+    margin-top: 16px;
+    background: #F3F4F6;
+    border-radius: 4px;
+    height: 8px;
+    overflow: hidden;
+  }
+  .score-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1.5s ease;
+    width: 0%;
+  }
+
+  /* Loss Calc */
+  .loss-section {
+    background: #fff;
+    margin: 0 12px 12px;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  }
+  .loss-title {
+    font-size: 12px;
+    color: #9CA3AF;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .loss-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--red);
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+  }
+  .loss-sub { font-size: 12px; color: #9CA3AF; margin-bottom: 16px; }
+  .loss-breakdown {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .loss-item {
+    background: #F9FAFB;
+    border-radius: 8px;
+    padding: 10px;
+  }
+  .loss-item-label { font-size: 11px; color: #9CA3AF; margin-bottom: 3px; }
+  .loss-item-val { font-size: 14px; font-weight: 600; color: var(--navy); }
+
+  /* Card */
+  .card {
+    background: #fff;
+    margin: 0 12px 12px;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  }
+  .card-title {
+    font-size: 12px;
+    color: #9CA3AF;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .card-title::before {
+    content: attr(data-icon);
+    font-style: normal;
+  }
+
+  /* Insights */
+  .insight-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  .insight-icon {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: var(--teal-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .insight-text {
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.6;
+    flex: 1;
+  }
+
+  /* Alerts */
+  .alert-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+  .alert-red { background: #FEF2F2; border: 1px solid #FECACA; }
+  .alert-yellow { background: #FFFBEB; border: 1px solid #FDE68A; }
+  .alert-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .dot-red { background: var(--red); }
+  .dot-yellow { background: var(--orange); }
+  .alert-text { font-size: 12px; color: #374151; line-height: 1.5; }
+
+  /* ===== URL 参数提示条 ===== */
+  .url-hint {
+    background: #FEF3C7;
+    margin: 12px;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 11px;
+    color: #92400E;
+    line-height: 1.5;
+    border: 1px solid #FCD34D;
+    display: none;
+  }
+  .url-hint.show { display: block; }
+  .url-hint strong { color: #78350F; }
+
+  /* Tier badge */
+  .tier-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 6px;
+    margin-bottom: 6px;
+  }
+  .tier-badge::before {
+    content: '';
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.7;
+    display: block;
+  }
+  .tier-1 { background: #FEF2F2; color: #DC2626; }
+  .tier-2 { background: #FFF7ED; color: #EA580C; }
+  .tier-3 { background: #FEFCE8; color: #CA8A04; }
+  .tier-4 { background: #F0FDF4; color: #16A34A; }
+
+  /* Tier track */
+  .tier-track-wrap { margin-top: 14px; }
+  .tier-track-label { display: flex; justify-content: space-between; margin-bottom: 5px; }
+  .tier-track-label span { font-size: 10px; color: #9CA3AF; }
+  .tier-track {
+    display: flex; height: 10px; border-radius: 5px; overflow: hidden; gap: 2px;
+    background: transparent; position: relative;
+  }
+  .tier-seg { flex: 1; border-radius: 3px; position: relative; }
+  .tier-seg-1 { background: #6EE7B7; }  
+  .tier-seg-2 { background: #86EFAC; }  
+  .tier-seg-3 { background: #FCD34D; }  
+  .tier-seg-4 { background: #FCA5A5; }  
+  .tier-pointer {
+    position: absolute; top: -4px; width: 18px; height: 18px; border-radius: 50%;
+    border: 2.5px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+    transform: translateX(-50%); transition: left 1.5s ease, background 0.4s ease; z-index: 2;
+  }
+  .tier-labels { display: flex; justify-content: space-between; margin-top: 5px; }
+  .tier-labels span { font-size: 10px; color: #9CA3AF; flex: 1; text-align: center; }
+  .tier-labels span.active-tier { font-weight: 600; font-size: 11px; }
+  .tier-1-active { color: #DC2626; }
+  .tier-2-active { color: #EA580C; }
+  .tier-3-active { color: #CA8A04; }
+  .tier-4-active { color: #16A34A; }
+
+  /* Benchmark */
+  .bench-item { margin-bottom: 14px; }
+  .bench-label { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .bench-name { font-size: 12px; color: #374151; }
+  .bench-val { font-size: 12px; font-weight: 600; color: var(--navy); }
+  .bench-track { height: 6px; background: #F3F4F6; border-radius: 3px; overflow: hidden; }
+  .bench-fill { height: 100%; border-radius: 3px; transition: width 1.5s ease; width: 0%; }
+  .fill-you { background: var(--red); }
+  .fill-avg { background: var(--teal); }
+  .fill-best { background: #10B981; }
+
+  /* CTA */
+  .cta-section {
+    margin: 0 12px 12px; border-radius: 14px; overflow: hidden; background: var(--navy);
+    padding: 24px 20px; color: #fff; text-align: center;
+  }
+  .cta-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+  .cta-sub { font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 20px; }
+  .cta-btn {
+    display: block; background: var(--teal); color: #fff; padding: 14px; border-radius: 10px;
+    font-size: 15px; font-weight: 600; text-decoration: none; margin-bottom: 10px;
+    cursor: pointer; border: none; width: 100%; transition: opacity 0.2s;
+  }
+  .cta-btn:active { opacity: 0.85; }
+  .cta-btn-2 {
+    display: block; background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8);
+    padding: 12px; border-radius: 10px; font-size: 13px; text-decoration: none;
+    cursor: pointer; border: 1px solid rgba(255,255,255,0.12); width: 100%; transition: opacity 0.2s;
+  }
+  .cta-note { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 12px; }
+  .footer-note { text-align: center; padding: 16px; font-size: 11px; color: #9CA3AF; }
+
+  @keyframes countUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div id="loading-screen">
+  <div class="loading-logo">🔍</div>
+  <div class="loading-title">正在生成专属报告</div>
+  <div class="loading-sub">AI正在分析您的经营数据...</div>
+  <div class="loading-bar"><div class="loading-bar-fill" id="loading-fill"></div></div>
+  <div class="loading-steps" id="loading-step">初始化分析模型...</div>
+</div>
+
+<div id="report">
+  <div class="url-hint" id="url-hint">数据来源：<strong id="url-source">—</strong></div>
+
+  <div class="r-header">
+    <div class="r-brand">榕汇智链 · 榕驿通 专属风险诊断报告</div>
+    <div class="r-company" id="r-company">深圳某跨境贸易有限公司</div>
+    <div class="r-meta"><span id="r-date">2026-06-22</span><span>·</span><span>报告有效期30天</span></div>
+    <div class="r-tags" id="r-tags"></div>
+  </div>
+
+  <div class="score-section">
+    <div class="score-title">退货风险评分 <span style="font-size:10px;color:#C4B5A0;font-weight:400;">(分数越高代表退货风险越高)</span></div>
+    <div class="score-main">
+      <div class="score-ring" id="score-ring-container">
+        <svg viewBox="0 0 80 80" width="80" height="80">
+          <circle cx="40" cy="40" r="34" fill="none" stroke="#F3F4F6" stroke-width="8"/>
+          <circle cx="40" cy="40" r="34" fill="none" stroke-width="8" stroke-linecap="round" id="score-circle" stroke-dasharray="213.6" stroke-dashoffset="213.6" style="transition: stroke-dashoffset 1.5s ease;"/>
+        </svg>
+        <div class="score-num" id="score-num">0</div>
+        <div class="score-unit">分</div>
+      </div>
+      <div class="score-info">
+        <div class="score-level" id="score-level">—</div>
+        <div id="tier-badge" class="tier-badge tier-1">⚡ 高风险区</div>
+        <div class="score-desc" id="score-desc">—</div>
+      </div>
+    </div>
+    <div class="tier-track-wrap">
+      <div class="tier-track-label"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
+      <div class="tier-track" id="tier-track">
+        <div class="tier-seg tier-seg-1"></div><div class="tier-seg tier-seg-2"></div>
+        <div class="tier-seg tier-seg-3"></div><div class="tier-seg tier-seg-4"></div>
+        <div class="tier-pointer" id="tier-pointer" style="left:0%;background:#10B981;top:50%;transform:translate(-50%,-50%);"></div>
+      </div>
+      <div class="tier-labels" id="tier-labels">
+        <span>✅健康区<br>运营出色</span><span>📊中低风险<br>建议优化</span>
+        <span>⚠️中高风险<br>值得关注</span><span>⚡高风险区<br>需立即行动</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="loss-section">
+    <div class="loss-title">年度退货损耗估算区间</div>
+    <div class="loss-number" id="loss-number">¥—</div>
+    <div class="loss-sub" id="loss-sub">根据您填写的数据估算，实际损耗受退货率波动影响</div>
+    <div class="loss-breakdown">
+      <div class="loss-item"><div class="loss-item-label">退货率区间</div><div class="loss-item-val" id="loss-rate">—</div></div>
+      <div class="loss-item"><div class="loss-item-label">月均订单量</div><div class="loss-item-val" id="loss-orders">—</div></div>
+      <div class="loss-item"><div class="loss-item-label">单品货值</div><div class="loss-item-val" id="loss-price">—</div></div>
+      <div class="loss-item"><div class="loss-item-label">高于行业均值</div><div class="loss-item-val" id="loss-above">—</div></div>
+    </div>
+  </div>
+
+  <div class="card"><div class="card-title" data-icon="💡">AI核心洞察</div><div id="insights-container"></div></div>
+  <div class="card"><div class="card-title" data-icon="⚠️">风险预警</div><div id="alerts-container"></div></div>
+  <div class="card"><div class="card-title" data-icon="📊">行业对标</div><div id="benchmark-container"></div></div>
+
+  <div class="cta-section">
+    <div class="cta-title" id="cta-title">您的退货风险等级较高</div>
+    <div class="cta-sub" id="cta-sub">专属顾问将在1小时内联系您，制定定制化保障方案</div>
+    <button class="cta-btn" onclick="alert('演示模式：实际场景将跳转企业微信添加好友页面')">立即添加专属顾问 →</button>
+    <button class="cta-btn-2" onclick="alert('演示模式：实际场景将发送入群邀请')">加入跨境卖家交流社群</button>
+    <div class="cta-note">本报告仅供参考 · 榕汇智链·榕驿通 · 深圳总部</div>
+  </div>
+  <div class="footer-note">报告ID: RY-2026062201 · 保密文件</div>
+</div>
+
+<script>
+// ============ 后端API配置 ============
+// 👇👇👇👇👇👇 请在这里替换为你自己的 Cloudflare Worker 链接 👇👇👇👇👇👇
+const API_BASE = 'https://ai-report-api.1679889934.workers.dev';
+// 👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆
+
+function getTierInfo(score) {
+  if (score >= 75) return { label: '⚡ 高风险区', badgeClass: 'tier-1', index: 3, activeClass: 'tier-1-active', tierDesc: '退货损耗严重，需立即采取行动' };
+  if (score >= 50) return { label: '⚠️ 中高风险', badgeClass: 'tier-2', index: 2, activeClass: 'tier-2-active', tierDesc: '退货问题值得关注，尽早干预' };
+  if (score >= 25) return { label: '📊 中低风险', badgeClass: 'tier-3', index: 1, activeClass: 'tier-3-active', tierDesc: '有一定退货损耗，建议优化' };
+  return { label: '✅ 健康区', badgeClass: 'tier-4', index: 0, activeClass: 'tier-4-active', tierDesc: '退货风险控制出色，运营健康' };
+}
+
+// 提取区间数字的核心函数
+function parseRange(str) {
+  if (!str) return { min: 0, max: 0, avg: 0, raw: '' };
+  const nums = str.match(/\d+(\.\d+)?/g);
+  if (!nums) return { min: 0, max: 0, avg: 0, raw: str };
+  const n = nums.map(Number);
+  if (n.length === 1) {
+    if (str.includes('以上')) return { min: n[0], max: n[0] * 1.5, avg: n[0] * 1.2, raw: str };
+    if (str.includes('以下')) return { min: n[0] * 0.5, max: n[0], avg: n[0] * 0.8, raw: str };
+    return { min: n[0], max: n[0], avg: n[0], raw: str };
+  }
+  return { min: Math.min(n[0], n[1]), max: Math.max(n[0], n[1]), avg: (n[0] + n[1]) / 2, raw: str };
+}
+
+async function callAIBackend(formData) {
+  showAILoading();
+  try {
+    const resp = await fetch(API_BASE + '/api/generate-report', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ form: formData }),
+    });
+    if (!resp.ok) throw new Error('后端服务异常');
+    const result = await resp.json();
+    currentData = {
+      company: formData.company || '跨境卖家',
+      tags: [...(formData.platforms||[]), formData.category||'', ...(formData.markets||[])],
+      score: result.score, level: result.level, levelColor: result.levelColor, scoreDesc: result.scoreDesc,
+      lossMin: result.lossMin, lossMax: result.lossMax, lossBasis: result.lossBasis,
+      rate: result.rate, orders: result.orders, price: result.price, above: result.above,
+      insights: result.insights || [], alerts: result.alerts || [], cta: result.cta, benchmark: result.benchmark || [],
+    };
+    hideLoading();
+    document.getElementById('url-hint').classList.add('show');
+    document.getElementById('url-source').textContent = '🤖 智谱AI实时生成';
+    renderReport(currentData);
+  } catch (err) {
+    callLocalEngine(formData); // AI报错时自动启用本地区间算法
+  }
+}
+
+function callLocalEngine(f) {
+  showAILoading();
+  const rr = parseRange(f.returnRate);
+  const ord = parseRange(f.orders);
+  const pr = parseRange(f.price);
+
+  let score = 0;
+  score += rr.avg * 3.5;
+  score += ord.avg / 800;
+  
+  const hd = f.handling || '';
+  let hdScore = 0;
+  if(hd.includes('损失自担') || hd.includes('直接退款')) hdScore = 25;
+  else if(hd.includes('销毁') || hd.includes('清货')) hdScore = 15;
+  else if(hd.includes('退回国内')) hdScore = 10;
+  else if(hd.includes('二次上架')) hdScore = 5;
+  else if(hd.includes('保险')) hdScore = -5;
+  score += hdScore;
+
+  const catMap = { '服装/鞋类': 5, '运动户外': 3, '美妆个护': 3, '家居用品': 2, '玩具/母婴': 1, '3C数码': -3 };
+  score += catMap[f.category] || 0;
+
+  if ((f.markets||[]).some(m => m.includes('欧') || m.includes('美'))) score += 4;
+  if (f.newMarket === '是') score += 3;
+  if ((f.platforms||[]).some(p => p.includes('FBA') || p.includes('托管'))) score -= 5;
+  
+  score = Math.max(3, Math.min(97, Math.round(score)));
+
+  let level, levelColor, scoreDesc;
+  if (score >= 75) { level = '高风险'; levelColor = '#EF4444'; scoreDesc = '退货率与损耗敞口显著高于行业均值，建议立即采取保障措施'; }
+  else if (score >= 50) { level = '中风险'; levelColor = '#F97316'; scoreDesc = '退货风险评分处于中等水平，建议提前部署保障以应对增长'; }
+  else { level = '低风险'; levelColor = '#10B981'; scoreDesc = '退货风险评分较低，建议进一步优化全链路以应对业务扩张'; }
+
+  const annualLossMin = ord.min * 12 * (rr.min / 100) * pr.min;
+  const annualLossMax = ord.max * 12 * (rr.max / 100) * pr.max;
+  const avgRate = { '服装/鞋类': 10, '美妆个护': 7, '3C数码/电子产品': 4, '家居用品': 6, '运动户外': 8, '玩具/母婴': 6 }[f.category] || 6;
+  const abovePct = Math.round((rr.avg - avgRate) / avgRate * 100);
+
+  const result = {
+    company: f.company || '跨境卖家',
+    tags: [...(f.platforms||[]), f.category||'', ...(f.markets||[])],
+    score, level, levelColor, scoreDesc,
+    lossMin: Math.round(annualLossMin), lossMax: Math.round(annualLossMax),
+    lossBasis: `基于填写的退货率、订单量及均价区间估算`,
+    rate: f.returnRate || '未知',
+    orders: f.orders || '未知',
+    price: f.price || '未知',
+    above: (abovePct >= 0 ? '+' : '') + abovePct + '%',
+    insights: [{ icon:'💡', text:`当前数据基于范围区间评估，总体${level}。` }, { icon:'📦', text:'如需获取更精准的诊断，建议监控精确经营数据。' }],
+    alerts: [], cta: { title: '查看专属方案', sub: '立即获取定制化退货保障方案' },
+    benchmark: [
+      { name: '您的退货率区间均值', val: rr.avg + '%', pct: Math.min(100, rr.avg/15*100), cls: score>=50?'fill-you':'fill-best' },
+      { name: '行业均值', val: avgRate + '%', pct: avgRate/15*100, cls: 'fill-avg' }
+    ]
+  };
+
+  hideLoading();
+  document.getElementById('url-hint').classList.add('show');
+  document.getElementById('url-source').textContent = '📊 本地计算引擎 (基于区间)';
+  renderReport(result);
+}
+
+function showAILoading() {
+  const ls = document.getElementById('loading-screen');
+  ls.style.display = 'flex'; ls.classList.remove('fade-out');
+  document.getElementById('loading-fill').style.width = '0%';
+  document.getElementById('report').style.display = 'none';
+}
+function hideLoading() {
+  const ls = document.getElementById('loading-screen');
+  ls.classList.add('fade-out');
+  setTimeout(() => { ls.style.display = 'none'; document.getElementById('report').style.display = 'block'; }, 500);
+}
+
+function parseURLParams() {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.toString()) return null; 
+  return { 
+    company: params.get('company') || '',
+    returnRate: params.get('returnRate') || '',
+    orders: params.get('orders') || '',
+    price: params.get('price') || '',
+    handling: params.get('handling') || '',
+    category: params.get('category') || '',
+    platforms: (params.get('platforms') || '').split(',').filter(Boolean),
+    markets: (params.get('markets') || '').split(',').filter(Boolean),
+    newMarket: params.get('newMarket') || ''
+  };
+}
+
+function renderReport(d) {
+  document.getElementById('r-company').textContent = d.company;
+  const today = new Date();
+  document.getElementById('r-date').textContent = today.toISOString().slice(0,10);
+  document.getElementById('r-tags').innerHTML = d.tags.map(t => `<span class="r-tag">${t}</span>`).join('');
+  
+  const scoreEl = document.getElementById('score-num');
+  const circle = document.getElementById('score-circle');
+  circle.style.stroke = d.levelColor;
+  
+  let start = 0, target = d.score, dur = 1500, step = 16, inc = target / (dur / step);
+  const scoreTimer = setInterval(() => {
+    start = Math.min(start + inc, target);
+    scoreEl.textContent = Math.round(start);
+    circle.style.strokeDashoffset = 213.6 * (1 - start / 100);
+    document.getElementById('tier-pointer').style.left = start + '%';
+    if (start >= target) clearInterval(scoreTimer);
+  }, step);
+  
+  document.getElementById('score-level').style.color = d.levelColor;
+  document.getElementById('score-level').textContent = d.level;
+  document.getElementById('score-desc').textContent = d.scoreDesc;
+  
+  const tierInfo = getTierInfo(d.score);
+  const badge = document.getElementById('tier-badge');
+  badge.className = 'tier-badge ' + tierInfo.badgeClass; badge.textContent = tierInfo.label;
+  const pointer = document.getElementById('tier-pointer');
+  pointer.style.background = d.levelColor; pointer.style.left = d.score + '%';
+  const labels = document.querySelectorAll('#tier-labels span');
+  labels.forEach((el, i) => { el.className = ''; if (i === tierInfo.index) el.classList.add('active-tier', tierInfo.activeClass); });
+  
+  const lossEl = document.getElementById('loss-number');
+  const lossMin = d.lossMin || 0, lossMax = d.lossMax || 0;
+  let lossStart = 0;
+  const lossInc = lossMax / (dur / step);
+  const lossTimer = setInterval(() => {
+    lossStart = Math.min(lossStart + lossInc, lossMax);
+    const ratio = lossMax > 0 ? lossStart / lossMax : 0;
+    const curMin = Math.round(lossMin * ratio);
+    const curMax = Math.round(lossStart);
+    lossEl.textContent = '¥' + (curMin / 10000).toFixed(1) + '万 ~ ¥' + (curMax / 10000).toFixed(1) + '万';
+    if (lossStart >= lossMax) clearInterval(lossTimer);
+  }, step);
+  
+  document.getElementById('loss-sub').textContent = d.lossBasis;
+  document.getElementById('loss-rate').textContent = d.rate;
+  document.getElementById('loss-orders').textContent = d.orders;
+  document.getElementById('loss-price').textContent = d.price;
+  document.getElementById('loss-above').textContent = d.above;
+  
+  document.getElementById('insights-container').innerHTML = d.insights.map(i => `<div class="insight-item"><div class="insight-icon">${i.icon}</div><div class="insight-text">${i.text}</div></div>`).join('');
+  document.getElementById('alerts-container').innerHTML = d.alerts.map(a => `<div class="alert-item alert-${a.type}"><div class="alert-dot dot-${a.type}"></div><div class="alert-text">${a.text}</div></div>`).join('');
+  document.getElementById('benchmark-container').innerHTML = d.benchmark.map(b => `<div class="bench-item"><div class="bench-label"><span class="bench-name">${b.name}</span><span class="bench-val">${b.val}</span></div><div class="bench-track"><div class="bench-fill ${b.cls}" data-pct="${b.pct}" style="width:0%"></div></div></div>`).join('');
+  setTimeout(() => { document.querySelectorAll('.bench-fill').forEach(el => { el.style.width = el.dataset.pct + '%'; }); }, 300);
+  
+  document.getElementById('cta-title').textContent = d.cta.title;
+  document.getElementById('cta-sub').textContent = d.cta.sub;
+}
+
+function startLoading() {
+  let fill = 0;
+  const fillEl = document.getElementById('loading-fill');
+  const timer = setInterval(() => {
+    fill += 4; fillEl.style.width = Math.min(fill, 100) + '%';
+    if (fill >= 100) {
+      clearInterval(timer);
+      setTimeout(() => { initReport(); }, 600);
+    }
+  }, 80);
+}
+
+function initReport() {
+  const urlData = parseURLParams();
+  if (urlData) callAIBackend(urlData);
+  else callLocalEngine({ company:'某测试跨境公司', returnRate:'12%-20%', orders:'5000-2万单', price:'500-1000元', category:'服装/鞋类', handling:'直接退款不退货，损失自担', platforms:['Amazon FBM'], markets:['欧美'] });
+}
+
+window.onload = startLoading;
+</script>
+</body>
+</html>
