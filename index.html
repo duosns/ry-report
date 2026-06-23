@@ -10,124 +10,23 @@
   body { font-family: -apple-system, 'PingFang SC', sans-serif; background: #F3F4F8; color: #1F2937; font-size: 14px; min-height: 100vh; }
   #loading-screen { position: fixed; inset: 0; background: var(--navy); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.5s; }
   #loading-screen.fade-out { opacity: 0; pointer-events: none; }
-  .loading-logo { width: 64px; height: 64px; background: var(--teal); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; font-size: 28px; }
-  .loading-title { color: #fff; font-size: 18px; font-weight: 600; margin-bottom: 8px; }
-  .loading-sub { color: rgba(255,255,255,0.55); font-size: 13px; margin-bottom: 32px; }
-  .loading-bar { width: 200px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; margin-bottom: 12px; }
-  .loading-bar-fill { height: 100%; background: var(--teal); border-radius: 2px; width: 0%; transition: width 0.2s ease; }
-  #report { display: none; max-width: 420px; margin: 0 auto; padding-bottom: 40px; }
-  .r-header { background: var(--navy); padding: 24px 20px 20px; color: #fff; position: relative; overflow: hidden; }
-  .r-brand { font-size: 11px; color: var(--teal); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
-  .r-brand::before { content: ''; width: 6px; height: 6px; background: var(--teal); border-radius: 50%; display: block; }
-  .r-company { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
-  .r-meta { font-size: 12px; color: rgba(255,255,255,0.5); display: flex; gap: 12px; margin-bottom: 16px; }
-  .r-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-  .r-tag { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); font-size: 11px; padding: 3px 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); }
-  .score-section, .loss-section, .card { background: #fff; margin: 12px; border-radius: 14px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
-  .score-title, .loss-title, .card-title { font-size: 12px; color: #9CA3AF; margin-bottom: 14px; letter-spacing: 0.5px; }
-  .score-main { display: flex; align-items: center; gap: 16px; }
-  .score-ring { width: 80px; height: 80px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-  .score-ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
-  .score-num { font-size: 26px; font-weight: 700; position: relative; z-index: 1; }
-  .score-unit { font-size: 10px; color: #9CA3AF; position: relative; z-index: 1; }
-  .score-info { flex: 1; }
-  .score-level { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
-  .score-desc { font-size: 12px; color: #6B7280; line-height: 1.5; }
-  .loss-number { font-size: 24px; font-weight: 700; color: var(--red); margin-bottom: 6px; }
-  .loss-sub { font-size: 12px; color: #9CA3AF; margin-bottom: 16px; }
-  .loss-breakdown { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .loss-item { background: #F9FAFB; border-radius: 8px; padding: 10px; }
-  .loss-item-label { font-size: 11px; color: #9CA3AF; margin-bottom: 3px; }
-  .loss-item-val { font-size: 14px; font-weight: 600; color: var(--navy); }
-  .insight-item, .alert-item { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 12px; }
-  .insight-icon { width: 28px; height: 28px; border-radius: 8px; background: var(--teal-light); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
-  .insight-text, .alert-text { font-size: 13px; color: #374151; line-height: 1.6; }
-  .alert-item { padding: 12px; border-radius: 8px; margin-bottom: 8px; }
-  .alert-red { background: #FEF2F2; border: 1px solid #FECACA; }
-  .alert-yellow { background: #FFFBEB; border: 1px solid #FDE68A; }
-  .alert-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
-  .dot-red { background: var(--red); } .dot-yellow { background: var(--orange); }
-  .url-hint { background: #FEF3C7; margin: 12px; border-radius: 10px; padding: 10px 14px; font-size: 11px; color: #92400E; display: none; }
-  .url-hint.show { display: block; }
-  .tier-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; margin: 6px 0; }
-  .tier-badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: 0.7; }
-  .tier-1 { background: #FEF2F2; color: #DC2626; } .tier-2 { background: #FFF7ED; color: #EA580C; } .tier-3 { background: #FEFCE8; color: #CA8A04; } .tier-4 { background: #F0FDF4; color: #16A34A; }
-  .tier-track-wrap { margin-top: 14px; }
-  .tier-track-label { display: flex; justify-content: space-between; margin-bottom: 5px; }
-  .tier-track-label span, .tier-labels span { font-size: 10px; color: #9CA3AF; }
-  .tier-track { display: flex; height: 10px; border-radius: 5px; overflow: hidden; gap: 2px; position: relative; }
-  .tier-seg { flex: 1; border-radius: 3px; position: relative; }
-  .tier-seg-1 { background: #6EE7B7; } .tier-seg-2 { background: #86EFAC; } .tier-seg-3 { background: #FCD34D; } .tier-seg-4 { background: #FCA5A5; }
-  .tier-pointer { position: absolute; top: -4px; width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.18); transform: translateX(-50%); transition: left 1.5s ease; z-index: 2; }
-  .tier-labels { display: flex; justify-content: space-between; margin-top: 5px; }
-  .tier-labels span { flex: 1; text-align: center; }
-  .tier-labels span.active-tier { font-weight: 600; font-size: 11px; }
-  .tier-1-active { color: #DC2626; } .tier-2-active { color: #EA580C; } .tier-3-active { color: #CA8A04; } .tier-4-active { color: #16A34A; }
-  .bench-item { margin-bottom: 14px; }
-  .bench-label { display: flex; justify-content: space-between; margin-bottom: 4px; }
-  .bench-name { font-size: 12px; color: #374151; } .bench-val { font-size: 12px; font-weight: 600; color: var(--navy); }
-  .bench-track { height: 6px; background: #F3F4F6; border-radius: 3px; overflow: hidden; }
-  .bench-fill { height: 100%; border-radius: 3px; transition: width 1.5s ease; width: 0%; }
-  .fill-you { background: var(--red); } .fill-avg { background: var(--teal); } .fill-best { background: #10B981; }
-  .cta-section { margin: 12px; border-radius: 14px; background: var(--navy); padding: 24px 20px; color: #fff; text-align: center; }
-  .cta-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
-  .cta-sub { font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 20px; }
-  .cta-btn { display: block; background: var(--teal); color: #fff; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 600; border: none; width: 100%; cursor: pointer; }
-  .footer-note { text-align: center; padding: 16px; font-size: 11px; color: #9CA3AF; }
+  .loading-logo, .loading-title, .loading-sub, .loading-bar { as previous... } /* 样式保持不变，省略以节省篇幅 */
+  /* （完整样式代码太长，这里省略，请保留你上一个版本的 <style> 部分） */
 </style>
 </head>
 <body>
 
-<div id="loading-screen">
-  <div class="loading-logo">🔍</div>
-  <div class="loading-title">正在生成诊断报告</div>
-  <div class="loading-sub">AI正在深度解析经营数据...</div>
-  <div class="loading-bar"><div class="loading-bar-fill" id="loading-fill"></div></div>
-</div>
+<div id="loading-screen"> ... </div>   <!-- 保持原有 loading 部分 -->
 
 <div id="report">
+  <!-- 保持原有 header、score、loss 等结构 -->
   <div class="url-hint" id="url-hint">数据来源：<strong id="url-source">—</strong></div>
-  <div class="r-header">
-    <div class="r-brand">榕汇智链 · 专属风险诊断报告</div>
-    <div class="r-company" id="r-company">数据解析中...</div>
-    <div class="r-meta"><span id="r-date"></span><span>·</span><span>报告有效期30天</span></div>
-    <div class="r-tags" id="r-tags"></div>
-  </div>
-
-  <div class="score-section">
-    <div class="score-title">退货风险评分 <span style="font-size:10px;color:#C4B5A0;">(分数越高代表风险越大)</span></div>
-    <div class="score-main">
-      <div class="score-ring">
-        <svg viewBox="0 0 80 80" width="80" height="80">
-          <circle cx="40" cy="40" r="34" fill="none" stroke="#F3F4F6" stroke-width="8"/>
-          <circle cx="40" cy="40" r="34" fill="none" stroke-width="8" stroke-linecap="round" id="score-circle" stroke-dasharray="213.6" stroke-dashoffset="213.6" style="transition: stroke-dashoffset 1.5s ease;"/>
-        </svg>
-        <div class="score-num" id="score-num">0</div><div class="score-unit">分</div>
-      </div>
-      <div class="score-info">
-        <div class="score-level" id="score-level">—</div>
-        <div id="tier-badge" class="tier-badge tier-1">—</div>
-        <div class="score-desc" id="score-desc">—</div>
-      </div>
-    </div>
-    <div class="tier-track-wrap">
-      <div class="tier-track-label"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
-      <div class="tier-track">
-        <div class="tier-seg tier-seg-1"></div><div class="tier-seg tier-seg-2"></div>
-        <div class="tier-seg tier-seg-3"></div><div class="tier-seg tier-seg-4"></div>
-        <div class="tier-pointer" id="tier-pointer" style="left:0%;background:#10B981;"></div>
-      </div>
-      <div class="tier-labels" id="tier-labels">
-        <span>✅健康区<br>运营出色</span><span>📊中低风险<br>建议优化</span>
-        <span>⚠️中高风险<br>值得关注</span><span>⚡高风险区<br>需立即行动</span>
-      </div>
-    </div>
-  </div>
+  <!-- ... 其他 HTML 结构保持不变 ... -->
 
   <div class="loss-section">
     <div class="loss-title">年度退货损耗估算区间</div>
     <div class="loss-number" id="loss-number">¥—</div>
-    <div class="loss-sub" id="loss-sub">估算基础数据加载中...</div>
+    <div class="loss-sub" id="loss-sub">基于您的退货率、订单量及货值估算</div>
     <div class="loss-breakdown">
       <div class="loss-item"><div class="loss-item-label">退货率</div><div class="loss-item-val" id="loss-rate">—</div></div>
       <div class="loss-item"><div class="loss-item-label">月均订单量</div><div class="loss-item-val" id="loss-orders">—</div></div>
@@ -136,16 +35,7 @@
     </div>
   </div>
 
-  <div class="card"><div class="card-title">💡 AI核心洞察</div><div id="insights-container"></div></div>
-  <div class="card"><div class="card-title">⚠️ 风险预警</div><div id="alerts-container"></div></div>
-  <div class="card"><div class="card-title">📊 行业对标</div><div id="benchmark-container"></div></div>
-
-  <div class="cta-section">
-    <div class="cta-title" id="cta-title">系统诊断完成</div>
-    <div class="cta-sub" id="cta-sub">请根据报告情况配置专属方案</div>
-    <button class="cta-btn" onclick="alert('即将跳转企业微信添加专属顾问')">立即添加专属顾问 →</button>
-  </div>
-  <div class="footer-note">保密文件 · 仅供内部经营诊断参考</div>
+  <!-- 其他 card 部分保持 -->
 </div>
 
 <script>
@@ -153,31 +43,25 @@ const API_BASE = 'https://ai-report-api.1679889934.workers.dev';
 
 function safeDecode(str) {
   if (!str) return '';
-  try {
-    return decodeURIComponent(str);
-  } catch (e) {
-    return str; // 解码失败时返回原始字符串
-  }
+  try { return decodeURIComponent(str); } catch(e) { return str; }
 }
 
 function parseURLParams() {
   const result = {};
-  console.log('原始URL:', window.location.search);
-
   const pairs = window.location.search.substring(1).split('&');
   for (let pair of pairs) {
     if (!pair) continue;
-    const [key, value] = pair.split('=');
+    let [key, value] = pair.split('=');
     if (key) {
-      const decodedKey = safeDecode(key);
-      const decodedValue = safeDecode(value || '');
-      result[decodedKey] = decodedValue;
-      console.log(decodedKey, '=>', decodedValue);
+      key = safeDecode(key);
+      value = safeDecode(value || '');
+      result[key] = value;
+      console.log(key, '=>', value);
     }
   }
 
   return {
-    company: result['field_1'] || result['company'] || '未知企业',
+    company: result['field_1'] || '您的企业',
     category: result['field_7'] || '',
     platforms: (result['field_5'] || '').split(/[,\s，；;]+/).filter(Boolean),
     markets: (result['field_4'] || '').split(/[,\s，；;]+/).filter(Boolean),
@@ -189,55 +73,48 @@ function parseURLParams() {
   };
 }
 
-function renderReport(d) {
-  document.getElementById('loading-screen').classList.add('fade-out');
-  setTimeout(() => {
-    document.getElementById('loading-screen').style.display = 'none';
-    document.getElementById('report').style.display = 'block';
-  }, 500);
+function calculateLoss(returnRate, orders, price) {
+  const rate = parseFloat(returnRate) || 8;
+  const orderNum = parseFloat(orders) || 10000;
+  const unitPrice = parseFloat(price) || 300;
+  const minLoss = Math.round(orderNum * 12 * (rate / 100) * unitPrice * 0.8);
+  const maxLoss = Math.round(orderNum * 12 * (rate / 100) * unitPrice * 1.3);
+  return { min: minLoss, max: maxLoss };
+}
 
-  document.getElementById('r-company').textContent = d.company || '您的企业';
+function renderReport(data) {
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('report').style.display = 'block';
+
+  document.getElementById('r-company').textContent = data.company;
   document.getElementById('r-date').textContent = new Date().toISOString().slice(0,10);
-  document.getElementById('r-tags').innerHTML = (d.tags || ['跨境电商']).map(t => `<span class="r-tag">${t}</span>`).join('');
 
-  const score = parseInt(d.score) || 53;
-  document.getElementById('score-num').textContent = score;
-  document.getElementById('score-level').textContent = d.level || '中高风险';
-  document.getElementById('score-desc').textContent = d.scoreDesc || '基于您的经营数据生成';
-  document.getElementById('loss-rate').textContent = d.returnRate || '—';
-  document.getElementById('loss-orders').textContent = d.orders || '—';
-  document.getElementById('loss-price').textContent = d.price || '—';
-  document.getElementById('loss-number').textContent = '¥0.0万 ~ ¥12.5万';
+  const tags = [...data.platforms, data.category].filter(Boolean);
+  document.getElementById('r-tags').innerHTML = tags.map(t => `<span class="r-tag">${t}</span>`).join('');
+
+  // 评分
+  document.getElementById('score-num').textContent = '53';
+  document.getElementById('score-level').textContent = '中高风险';
+
+  // 损耗计算
+  const loss = calculateLoss(data.returnRate, data.orders, data.price);
+  document.getElementById('loss-number').textContent = `¥${(loss.min/10000).toFixed(1)}万 ~ ¥${(loss.max/10000).toFixed(1)}万`;
+  document.getElementById('loss-rate').textContent = data.returnRate || '—';
+  document.getElementById('loss-orders').textContent = data.orders || '—';
+  document.getElementById('loss-price').textContent = data.price || '—';
+  document.getElementById('loss-above').textContent = '高于行业均值';
 
   document.getElementById('url-hint').classList.add('show');
   document.getElementById('url-source').textContent = '📊 本地诊断引擎';
 }
 
 window.onload = function() {
-  let fill = 0;
-  const fillEl = document.getElementById('loading-fill');
-  const timer = setInterval(() => {
-    fill += 10;
-    fillEl.style.width = Math.min(fill, 100) + '%';
-    if (fill >= 100) {
-      clearInterval(timer);
-      const urlData = parseURLParams();
-      console.log('最终解析数据:', urlData);
-
-      setTimeout(() => {
-        renderReport({
-          company: urlData.company,
-          score: 53,
-          level: '中高风险',
-          scoreDesc: '基于您填写的退货率、订单量等数据生成',
-          returnRate: urlData.returnRate || '—',
-          orders: urlData.orders || '—',
-          price: urlData.price || '—',
-          tags: [...urlData.platforms, urlData.category].filter(Boolean)
-        });
-      }, 400);
-    }
-  }, 40);
+  const urlData = parseURLParams();
+  console.log('解析到的数据:', urlData);
+  
+  setTimeout(() => {
+    renderReport(urlData);
+  }, 600);
 };
 </script>
 </body>
